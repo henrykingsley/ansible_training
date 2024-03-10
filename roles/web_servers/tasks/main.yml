@@ -1,0 +1,50 @@
+- name: install httpd package (CentOS)
+  tags: CentosHttpd
+  dnf:
+    name:
+      - httpd
+      - php
+    state: latest
+  when: ansible_distribution == "CentOS"
+
+- name: start httpd (CentOS)
+  tags: CentosHttpd
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+  when: ansible_distribution == "CentOS"
+
+- name: change email address for admin
+  tags: CentosEmailChange
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^ServerAdmin'
+    line: ServerAdmin somebody@somewhere.net
+  when: ansible_distribution == "CentOS"
+  register: httpdvar
+
+- name: restart httpd (CentOS)
+  tags: CentOSEmailChange
+  service:
+    name: httpd
+    state: restarted
+  when: httpdvar.changed
+
+- name: install apache2 package (Ubuntu)
+  tags: UbuntuApache
+  apt:
+    name:
+      - apache2
+      - libapache2-mod-php
+    state: latest
+  when: ansible_distribution == "Ubuntu"
+
+- name: copy default html file for site
+  tags: UbuntuApache
+  copy:
+    src: default_site.html
+    dest: /var/www/html/index.html
+    owner: root
+    group: root
+    mode: 0644
