@@ -1,33 +1,32 @@
-- name: install httpd package (CentOS)
-  tags: CentosHttpd
-  dnf:
+- name: install apache and php packages
+  tags: ApachePhp
+  package:
     name:
-      - httpd
-      - php
+      - "{{ apache_package_name }}"
+      - "{{ php_package_name }}"
     state: latest
-  when: ansible_distribution == "CentOS"
+  
 
-- name: start httpd (CentOS)
-  tags: CentosHttpd
+- name: start and enable apache service
+  tags: ApacheHttpd
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: started
     enabled: yes
-  when: ansible_distribution == "CentOS"
-
+  
 - name: change email address for admin
   tags: CentosEmailChange
   lineinfile:
     path: /etc/httpd/conf/httpd.conf
     regexp: '^ServerAdmin'
-    line: ServerAdmin somebody@somewhere.net
+    line: ServerAdmin somebody@somewhere.com
   when: ansible_distribution == "CentOS"
   register: httpdvar
 
-- name: restart httpd (CentOS)
+- name: restart httpd 
   tags: CentOSEmailChange
   service:
-    name: httpd
+    name: "{{ apache_service}}"
     state: restarted
   when: httpdvar.changed
 
